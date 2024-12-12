@@ -12,6 +12,27 @@ import { defaultImages } from "@/constants/images";
 
 import { FormErrors } from "./form-errors";
 
+// Define interfaces for the Unsplash image structure
+interface UnsplashUser {
+  name: string;
+}
+
+interface UnsplashUrls {
+  thumb: string;
+  full: string;
+}
+
+interface UnsplashLinks {
+  html: string;
+}
+
+interface UnsplashImage {
+  id: string;
+  urls: UnsplashUrls;
+  links: UnsplashLinks;
+  user: UnsplashUser;
+}
+
 interface FormPickerProps {
   id: string;
   errors?: Record<string, string[] | undefined>;
@@ -20,8 +41,9 @@ interface FormPickerProps {
 export const FormPicker = ({ id, errors }: FormPickerProps) => {
   const { pending } = useFormStatus();
 
-  const [images, setImages] =
-    useState<Array<Record<string, any>>>(defaultImages);
+  const [images, setImages] = useState<UnsplashImage[]>(
+    defaultImages as UnsplashImage[]
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
@@ -32,16 +54,17 @@ export const FormPicker = ({ id, errors }: FormPickerProps) => {
           collectionIds: ["317099"],
           count: 9,
         });
+        console.log("Unsplash API result:", result);
 
         if (result && result.response) {
-          const newImages = result.response as Array<Record<string, any>>;
+          const newImages = result.response as UnsplashImage[];
           setImages(newImages);
         } else {
-          console.error("Failed to get images from Unsplash");
+          console.error("Failed to get images from Unsplash: Invalid response");
         }
       } catch (error) {
-        console.log(error);
-        setImages(defaultImages);
+        console.error("Error fetching images:", error);
+        setImages(defaultImages as UnsplashImage[]);
       } finally {
         setIsLoading(false);
       }
@@ -88,6 +111,7 @@ export const FormPicker = ({ id, errors }: FormPickerProps) => {
               alt="Unsplash image"
               className="object-cover rounded-sm"
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
             {selectedImageId === image.id && (
               <div className="absolute inset-y-0 h-full w-full bg-black/30 flex items-center justify-center">

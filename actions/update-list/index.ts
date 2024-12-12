@@ -3,7 +3,6 @@
 import { auth } from "@clerk/nextjs";
 import { revalidatePath } from "next/cache";
 
-import { db } from "@/lib/db";
 import { createSafeAction } from "@/lib/create-safe-action";
 
 import { UpdateList } from "./schema";
@@ -11,6 +10,7 @@ import { InputType, ReturnType } from "./types";
 
 import { createAuditLog } from "@/lib/create-audit-log";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
+import db from "@/lib/db";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
   const { userId, orgId } = auth();
@@ -44,7 +44,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       entityType: ENTITY_TYPE.CARD,
       action: ACTION.UPDATE,
     });
-  } catch (error) {
+  } catch {
     return {
       error: "Failed to update.",
     };
@@ -53,5 +53,4 @@ const handler = async (data: InputType): Promise<ReturnType> => {
   revalidatePath(`/board/${boardId}`);
   return { data: list };
 };
-
 export const updateList = createSafeAction(UpdateList, handler);
